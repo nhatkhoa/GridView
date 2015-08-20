@@ -27,24 +27,39 @@ var GridView = (function() {
     }
     headers.push(Dom.createElement('th', null, ['']));
     Dom.render(
-      Dom.createElement('div', { className: 'panel panel-default' }, [
-        Dom.createElement('div', { className: 'panel-heading' }, [
-          Dom.createElement('div', { className: 'panel-title' }, [
+      Dom.createElement('div', {
+        className: 'panel panel-default'
+      }, [
+        Dom.createElement('div', {
+          className: 'panel-heading'
+        }, [
+          Dom.createElement('div', {
+            className: 'panel-title'
+          }, [
             Dom.createElement('h3', null, [
               Dom.createElement('label', null, ['Sample GridView Control'])
             ])
           ])
         ]),
-        Dom.createElement('div', { className: 'panel-body' }, [
-          Dom.createElement('table', { className: 'table' }, [
+        Dom.createElement('div', {
+          className: 'panel-body'
+        }, [
+          Dom.createElement('table', {
+            className: 'table'
+          }, [
             Dom.createElement('thead', null, [
               Dom.createElement('tr', null, headers)
             ]),
             Dom.createElement('tbody')
           ])
         ]),
-        Dom.createElement('div', { className: 'panel-footer' }, [
-          Dom.createElement('button', { type: 'button', className: 'btn btn-default' }, ['Add Row'])
+        Dom.createElement('div', {
+          className: 'panel-footer'
+        }, [
+          Dom.createElement('button', {
+            type: 'button',
+            className: 'btn btn-default'
+          }, ['Add Row'])
         ])
       ]),
       this.options.renderTo
@@ -70,11 +85,21 @@ var GridView = (function() {
       row.push(Dom.createElement('td', null, [content]));
     }
     row.push(Dom.createElement('td', null, [
-      Dom.createElement('button', { type: 'button', className: 'btn btn-link' }, [
-        Dom.createElement('span', { className: 'glyphicon glyphicon-edit' })
+      Dom.createElement('button', {
+        type: 'button',
+        className: 'btn btn-link'
+      }, [
+        Dom.createElement('span', {
+          className: 'glyphicon glyphicon-edit'
+        })
       ]),
-      Dom.createElement('button', { type: 'button', className: 'btn btn-link' }, [
-        Dom.createElement('span', { className: 'glyphicon glyphicon-remove' })
+      Dom.createElement('button', {
+        type: 'button',
+        className: 'btn btn-link'
+      }, [
+        Dom.createElement('span', {
+          className: 'glyphicon glyphicon-remove'
+        })
       ])
     ]));
     Dom.render(

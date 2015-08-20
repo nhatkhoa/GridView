@@ -6,7 +6,7 @@ window.Dom || (function(window) {
       var node = document.createElement(tag);
       if (attributes) {
         for (var i in attributes) {
-          node[i] =  attributes[i];
+          node[i] = attributes[i];
         }
       }
       if (children && children.length > 0) {
