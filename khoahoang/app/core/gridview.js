@@ -27,15 +27,14 @@ var GridView = (function() {
     var headers = [];
     for (var i = 0; i < this.options.columns.length; ++i) {
       var headerName = this.options.columns[i].header;
-      var widthHeader = 'col-lg-' + this.options.columns[i].width;
+      var flexHeader = 'col-lg-' + this.options.columns[i].flex;
       headers.push(Dom.createElement('th', {
-        className: widthHeader
+        className: flexHeader
       }, [headerName], function() {
         grid.sortData(headerName);
       }));
     }
     headers.push(Dom.createElement('th', null, ['']));
-
 
 
     function onClickAddRow() {
@@ -70,7 +69,7 @@ var GridView = (function() {
           className: 'panel-body'
         }, [
           Dom.createElement('table', {
-            className: 'table'
+            className: 'table table-hover'
           }, [
             Dom.createElement('thead', null, [
               Dom.createElement('tr', null, headers)
@@ -120,11 +119,11 @@ var GridView = (function() {
       }, [content]));
     }
 
-    var onRemoveEvent = function() {
+    function onRemoveEvent() {
       grid.removeRow(element);
     }
 
-    var onEditEvent = function() {
+    function onEditEvent() {
       grid.editRow(element, dataRow);
     }
 
@@ -227,7 +226,7 @@ var GridView = (function() {
         for (var i = 0; i < inputs.length; i++) {
           var cell = inputs[i];
           var dataIndex = cell.id;
-          if (cell.value == "" || cell.value == null) throw 'Input do not empty! --> ' + dataIndex;
+          if (cell.value === "" || cell.value === null) throw 'Input do not empty! --> ' + dataIndex;
 
           if (typeof newDataRow[dataIndex] === 'number') {
             var number = parseInt(cell.value);

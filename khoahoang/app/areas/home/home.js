@@ -32,23 +32,28 @@
     columns: [{
       dataIndex: 'id',
       header: 'Id',
-      width: 1
+      editable: true,
+      flex: 1
     }, {
       dataIndex: 'name',
       header: 'Product Name',
-      width: 3
+      editable: true,
+      flex: 3
     }, {
       dataIndex: 'name',
       header: 'Product Name',
-      width: 3
-    }, {
-      dataIndex: 'price',
-      header: 'Product Price',
-      width: 1
+      editable: true,
+      flex: 3
     }, {
       dataIndex: 'price',
       header: 'Price',
-      width: 1,
+      editable: true,
+      flex: 2
+    }, {
+      dataIndex: 'price',
+      header: 'Price',
+      editable: true,
+      flex: 2,
       display: function(value) {
         return '$ ' + (value / 100).toFixed(2);
       }

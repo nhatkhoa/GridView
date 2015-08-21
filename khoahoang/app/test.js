@@ -29,7 +29,7 @@
   }];
 
   var parent = document.querySelector('[grid-repeat]');
-  var expression = expression.attributes['grid-repeat'].nodeValue;
+  var expression = parent.attributes['grid-repeat'].nodeValue;
   console.log(expression);
 
   var match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)?\s*$/);
@@ -46,4 +46,27 @@
   console.log(innerHTML);
 
 
+
+  /*
+  var cachedData = JSON.parse(localStorage.getItem('dataSource'));
+
+      if (cachedData) {
+        console.log(data);
+        console.log(cachedData);
+        this._dataSource = cachedData;
+        for (var i = 0; i < this._dataSource.length; ++i) {
+          this.addRow(this._dataSource[i]);
+        }
+        return;
+      }
+
+      if (data && data.length > 0) {
+        this._dataSource = data;
+        localStorage.setItem("dataSource", JSON.stringify(data));
+        for (var i = 0; i < this._dataSource.length; ++i) {
+          this.addRow(this._dataSource[i]);
+        }
+      }
+    };
+   */
 })();
