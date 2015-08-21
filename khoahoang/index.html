@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Home</title>
+    <meta name="description" content="home, javascript">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div id="grid">
+    </div>
+    <br/>
+    <div class="header" grid-repeat="item in data">
+        <p>{{id}}</p>
+        <p>{{name}}</p>
+        <p>{{price}}</p>
+    </div>
+    <script src="app/core/dom.js"></script>
+    <script src="app/core/gridview.js"></script>
+    <script src="app/areas/home/home.js"></script>
+    <script src="app/test.js"></script>
+</body>
+
+</html>
