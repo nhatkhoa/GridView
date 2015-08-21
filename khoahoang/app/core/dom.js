@@ -10,8 +10,7 @@ window.Dom || (function(window) {
         }
       }
       if (callbackEvent) {
-        console.debug('Added event for ' + tag);
-
+        return callbackEvent();
       }
       if (children && children.length > 0) {
         for (var i = 0, child; i < children.length; ++i) {
