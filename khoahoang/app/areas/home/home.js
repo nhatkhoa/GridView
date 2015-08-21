@@ -43,12 +43,12 @@
       width: 3
     }, {
       dataIndex: 'price',
-      header: 'Product Price',
-      width: 1
+      header: 'Price',
+      width: 2
     }, {
       dataIndex: 'price',
       header: 'Price',
-      width: 1,
+      width: 2,
       display: function(value) {
         return '$ ' + (value / 100).toFixed(2);
       }

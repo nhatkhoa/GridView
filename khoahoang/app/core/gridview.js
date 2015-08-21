@@ -227,7 +227,7 @@ var GridView = (function() {
         for (var i = 0; i < inputs.length; i++) {
           var cell = inputs[i];
           var dataIndex = cell.id;
-          if (cell.value == "" || cell.value == null) throw 'Input do not empty! --> ' + dataIndex;
+          if (cell.value === "" || cell.value === null) throw 'Input do not empty! --> ' + dataIndex;
 
           if (typeof newDataRow[dataIndex] === 'number') {
             var number = parseInt(cell.value);
