@@ -18,21 +18,32 @@ window.Dom || (function(window) {
           if (typeof(child) === 'string') {
             child = document.createTextNode(child);
           }
+          console.log('Render child ' + child.nodeName + ' - value : ' + child.innerText + ' (' + child);
           node.appendChild(child);
         }
       }
       return node;
     },
-    update: function(afterNode, node) {
-      afterNode.parentNode.insertBefore(node, afterNode);
-      afterNode.remove();
+    parseHTML(html) {
+      var wraper = document.createElement('div');
+      wraper.innerHTML = html;
+      return wraper;
     },
-    remove: function(node) {
-      if (node instanceof HTMLElement)
-        node.remove();
+    update: function(child, parent) {
+      parent.innerHTML = '';
+      parent.appendChild(child);
     },
-    render: function(node, parent) {
-      parent.appendChild(node);
+    updates: function(childs, parent) {
+      parent.innerHTML = '';
+      if (childs && childs.length > 0) {
+        for (var i = 0, child; i < childs.length; ++i) {
+          child = childs[i];
+          parent.appendChild(child);
+        }
+      }
+    },
+    render: function(nodeOrHtml, parent) {
+      parent.appendChild(nodeOrHtml);
     },
     clear: function(parent) {
       parent.innerHTML = '';
