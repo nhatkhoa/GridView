@@ -667,6 +667,19 @@
       editable: 'true',
       nullable: false
     }, {
+      title: 'Avatar',
+      flexWidth: 1,
+      editable: false,
+      fieldTemplate: function(value, rowIndex) {
+        return Dom.createElement('div', {
+          className: 'img-thumbnail'
+        }, [Dom.createElement('img', {
+          className: 'img-responsive',
+          alt: rowIndex,
+          src: 'assets/img.jpg'
+        })]);
+      }
+    }, {
       title: 'Age',
       flexWidth: 1,
       dataIndex: 'Age',
