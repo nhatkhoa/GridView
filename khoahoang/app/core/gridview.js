@@ -114,8 +114,7 @@ var GridView = (function() {
       display = columns[i].display;
       content = display ? display(content) : String(content);
       row.push(Dom.createElement('td', {
-        className: 'rowValue',
-        id: dataIndex
+        className: 'field-' + dataIndex
       }, [content]));
     }
 

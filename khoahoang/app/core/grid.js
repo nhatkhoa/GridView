@@ -21,8 +21,8 @@ var Grid = (function() {
     BTN_SAVE_PREFIX = 'save-',
     BTN_CANCEL_PREFIX = 'cancel-';
 
-  var editingRow = -1,
-    currentHoverRow = -1;
+
+
 
   function Grid(options) {
     this.options = options || {};
@@ -37,6 +37,8 @@ var Grid = (function() {
       throw 'DataSource can not empty, please check your configurations.';
     }
 
+    this.editingPosition = -1;
+    this.currentHoverRow = -1;
   }
 
   Object.defineProperty(Grid, 'options', {
@@ -48,170 +50,149 @@ var Grid = (function() {
     }
   });
 
-  function getRowTarget(rowIndex) {
-    var cssRowPrefix = this.CSS_ROW_PREFIX;
-    return this._getBodyPosition().querySelector('.' + cssRowPrefix + rowIndex);
-  }
+
 
   function getRowIndex(target) {
-    while (target.className.indexOf(cssRowPrefix) === -1) {
+
+    console.log(target);
+    while (target.className.indexOf(CSS_ROW_PREFIX) === -1) {
       target = target.parentNode;
       if (target.nodeName === 'BODY') throw ('Your cursor is out of row.');
     }
-    return target.className.substr(cssRowPrefix.length);
+    return target.className.substr(CSS_ROW_PREFIX.length);
   }
 
   function getColIndex(target) {
-    while (target.className.indexOf(cssColPrefix) === -1) {
+    while (target.className.indexOf(CSS_COL_PREFIX) === -1) {
       target = target.parentNode;
       if (target.nodeName === 'BODY') throw ('Your cursor is out of field.');
     }
-    return target.className.substr(cssColPrefix.length);
+    return target.className.substr(CSS_COL_PREFIX.length);
   }
 
-  function getColOption: function(columnIndex) {
-    var column = this.options.columns[columnIndex];
-    if (!column) throw ('Out of column option list at ' + columnIndex);
+  function getColOption(col) {
+    var column = this.options.columns[col];
+    if (!column) throw ('Out of column option list at ' + col);
     return column;
   }
 
   // TODO : header title with sort and filter button.
-  function getHeadFieldTemplate: function() {
+  function getHeadFieldTemplate() {
 
   }
 
-  function getDataIndex: function(columnIndex) {
-    var dataIndex = this._getColOption(columnIndex).dataIndex;
+  function getDataIndex(columnIndex) {
+    var dataIndex = getColOption(columnIndex).dataIndex;
     if (!dataIndex) return 'none';
     return column;
   }
 
 
 
-  Grid.prototype.render = function(isShowHeader) {
+  Grid.prototype.render = function() {
     this.renderLayout();
-    if (isShowHeader) this.renderHeader();
+    if (this.isShowHeader) this.renderHeader();
     this.renderRows();
   };
 
   Grid.prototype.init = function() {
-    this.render(this.isShowHeader());
-    this.addListener(this._getBodyPosition());
-  };
-
-  Grid.prototype.addEventListener = function(type, callback, parent) {
+    var callbackFn = this.eventCallback.bind(this);
     var grid = this;
+    this.render();
+
+    // Add event listener default for gridview.
+
+    this.addEventListener('click', onBtnClick.bind(this));
+    this.addEventListener('click', onRowClick);
+    this.addEventListener('dblclick', onRowDbClick);
+    this.addEventListener('mouseover', onRowHover);
+
+    function onBtnClick(target) {
+
+      var btnId = target.id || target.parentNode.id || '';
+
+      console.log('Click ' + btnId.outerHTML);
+
+      function checkType(prefix) {
+        return btnId.indexOf(prefix) !== -1;
+      }
+
+      function getRow(prefix) {
+        return btnId.substr(prefix.length);
+      }
+
+      if (checkType(BTN_EDIT_PREFIX)) this.editRow(getRow(BTN_EDIT_PREFIX));
+      if (checkType(BTN_REMOVE_PREFIX)) this.removeRow(getRow(BTN_REMOVE_PREFIX));
+      if (checkType(BTN_SAVE_PREFIX)) this.saveChange();
+      if (checkType(BTN_CANCEL_PREFIX)) grid.cancelEdit();
+
+    }
+
+    function getEventData(target) {
+      var event = {};
+      event.row = getRowIndex(target);
+      event.col = getColIndex(target);
+      event.target = target;
+      return event;
+    }
 
 
+    function onRowClick(target) {
+      var event = getEventData(target);
+      event.type = 'onRowClicked';
 
-    function addListener(type, callback, parent) {
-      var callBackFn = grid._eventCallback.bind(grid);
+      return callbackFn(event);
+    }
 
+    function onRowDbClick(target) {
+      var event = getEventData(target);
+      event.type = 'onRowDoubleClicked';
 
+      return callbackFn(event);
+    }
 
-      //Event: Onclick
-      parent.addEventListener('click', function() {
-        var e = event || window.event,
-          target = e.target || e.srcElement,
-          indexButton = target.id || target.parentNode.id;
+    function onRowHover(target) {
+      var event = getEventData(target);
+      event.type = 'onRowHover';
 
-        try {
-
-          // Click on button edit row
-          if (indexButton.indexOf(editPrefix) !== -1) {
-            var rowIndex = indexButton.substr(editPrefix.length);
-
-            grid.editRow(rowIndex);
-          }
-
-          // Click on button remove row
-          if (indexButton.indexOf(removePrefix) !== -1) {
-            var rowIndex = indexButton.substr(removePrefix.length);
-
-            grid.removeRow(rowIndex);
-          }
-
-          // TODO : save change with custom edit template
-          // Click on button save change row
-          if (indexButton.indexOf(savePrefix) !== -1) {
-            var rowIndex = indexButton.substr(savePrefix.length);
-            console.log('Save change row ' + rowIndex);
-            grid.saveChange();
-
-          }
-
-          // Click on button cancel change row
-          if (indexButton.indexOf(cancelPrefix) !== -1) {
-            var rowIndex = indexButton.substr(cancelPrefix.length);
-            grid._editingPosition = -1;
-            grid._renderRow(rowIndex, grid._dataSource[rowIndex]);
-          }
-
-        } catch (e) {
-          alert(e);
-          console.error(e);
-        }
-        e.stopPropagation();
-
-      });
-
-      //Event: Double Click
-      parent.addEventListener('dblclick', function() {
-        var e = event || window.event
-        var target = e.target || e.srcElement;
-        e.stopPropagation();
-
-        var indexColumn = getColIndex(target);
-        var row = getRowIndex(target);
-        console.log('Double click on row : ' + row + ' at column : ' + indexColumn);
-        grid.editRow(row);
-      });
-
-      //Event: Focus row and field
-      parent.addEventListener('mouseover', function() {
-        var e = event || window.event
-        var target = e.target || e.srcElement;
-        e.stopPropagation();
-
-        var row = getRowIndex(target);
-        var col = getColIndex(target);
-
-        callBackFn.call(this, {
-          type: 'onFieldFocused',
-          row: row,
-          col: col
-        });
-
-        if (row !== currentHoverRow) {
-          currentHoverRow = row;
-
-          callBackFn.call(this, {
-            type: 'onRowFocused',
-            row: row,
-            col: col
-          });
-        }
-
-        e.stopPropagation();
-      });
-
-
+      return callbackFn(event);
     }
   };
 
-  Grid.prototype.isShowHeader: function() {
+  Grid.prototype.addEventListener = function(type, callback) {
+    var node = this.getBodyPosition();
+
+    node.addEventListener(type, callbackfn.bind(this));
+
+    function callbackfn() {
+      var e = event || window.event;
+      var target = e.target || e.srcElement;
+
+      e.stopPropagation();
+      console.log('Target from addEvent ' + target.outerHTML);
+      return callback.call(this, target);
+    }
+  };
+
+  Grid.prototype.cancelEdit = function() {
+    var row = this.editingPosition;
+    this.renderRow(row, this._dataSource[row]);
+    this.editingPosition = -1;
+  };
+
+  Grid.prototype.isShowHeader = function() {
     return this.options.isShowHeader || true;
   };
 
-  Grid.prototype.isShowEditButton: function() {
+  Grid.prototype.isShowEditButton = function() {
     return this.options.isShowEditButton || true;
   };
 
-  Grid.prototype.isShowAddButton: function() {
+  Grid.prototype.isShowAddButton = function() {
     return this.options.isShowAddButton || true;
   };
 
-  Grid.prototype.addNewRow: function() {
+  Grid.prototype.addNewRow = function() {
     var newRow = {};
     for (var i = 0; i < this.options.length; i++) {
       var col = this.options[i];
@@ -231,14 +212,14 @@ var Grid = (function() {
           break;
       }
     };
-    this._renderRow(this._dataSource.length, newRow);
+
+    this.renderRow(this._dataSource.length, newRow);
     this.editRow(this._dataSource.length);
   };
 
-  Grid.prototype.saveChange: function() {
-    var row = this._editingPosition,
-      editingRow = this._getRowTarget(row),
-      cssColPrefix = this.CSS_COL_PREFIX;
+  Grid.prototype.saveChange = function() {
+    var row = this.editingPosition,
+      editingRow = this.getRowTarget(row);
 
     if (!editingRow) throw ('Something go to wrong with Edit Feature --> editing row : ' + row);
 
@@ -248,16 +229,16 @@ var Grid = (function() {
 
     for (var i = 0; i < fields.length; i++) {
       var field = fields[i];
-      if (field.className.indexOf(cssColPrefix) !== -1) {
-        var col = parseInt(field.className.substr(cssColPrefix.length));
+      if (field.className.indexOf(CSS_COL_PREFIX) !== -1) {
+        var col = parseInt(field.className.substr(CSS_COL_PREFIX.length));
         console.log('Get value from field ' + col + ' of row ' + row);
 
         console.log('Catch col = ' + col);
         try {
-          var value = this._getEditValue(col, field);
+          var value = this.getEditValue(col, field);
 
         } catch (e) {
-          alert(e);
+          //alert(e);
           console.log(e);
           return;
         }
@@ -282,54 +263,47 @@ var Grid = (function() {
       }
     }
 
-    this._renderRow(row, this._dataSource[row]);
-    this._editingPosition = -1;
+    this.renderRow(row, this._dataSource[row]);
+    this.editingPosition = -1;
   };
 
-  Grid.prototype.editRow: function(row) {
-
-    var cssRowPrefix = this.CSS_ROW_PREFIX;
-    var cssColPrefix = this.CSS_COL_PREFIX;
-    var cssBtnEdit = this.EDIT_COL_PREFIX;
-    var grid = this;
-
-    if (this._editingPosition !== -1) throw ('Please complete editing row ' + (+this._editingPosition + 1) + ' first.');
-    this._editingPosition = row;
-
-    var fields = document.querySelectorAll('.' + cssRowPrefix + row + ' > td');
+  Grid.prototype.editRow = function(row) {
+    if (this.editingPosition !== -1) throw ('Please complete editing row ' + (+this.editingPosition + 1) + ' first.');
+    this.editingPosition = row;
+    console.log('editingRow ' + this.editingPosition);
+    var fields = document.querySelectorAll('.' + CSS_ROW_PREFIX + row + ' > td');
     console.log('Edit ' + fields.length + ' field : ' + JSON.stringify(fields));
 
     for (var i = 0; i < fields.length; i++) {
       var field = fields[i];
-      if (field.className.indexOf(cssColPrefix) !== -1)
+      if (field.className.indexOf(CSS_COL_PREFIX) !== -1)
         this.renderEditField(row, i, field);
-      if (field.className.indexOf(cssBtnEdit) !== -1) {
-        renderBtnSave(field);
+      if (field.className.indexOf(EDIT_COL_PREFIX) !== -1) {
+        renderBtnSave.call(this, field);
       }
     }
 
     //FIX
     function renderBtnSave(target) {
-      var btnSaveChanges = grid._getSaveButtonTemplate(row);
+      var btnSaveChanges = this.getSaveButtonTemplate(row);
       Dom.updates(btnSaveChanges, target);
     }
 
   };
 
-  Grid.prototype.removeRow: function(rowIndex) {
+  Grid.prototype.removeRow = function(rowIndex) {
     var confirm = window.confirm(this.options.removeMessage ? this.options.removeMessage : 'Please confirm that you really want to remove it.');
     if (confirm) {
       delete this._dataSource[rowIndex];
-      this._getRowTarget(rowIndex).remove();
+      this.getRowTarget(rowIndex).remove();
     }
-
   };
 
 
-  Grid.prototype.renderEditField: function(rowIndex, columnIndex, fieldDom) {
+  Grid.prototype.renderEditField = function(rowIndex, columnIndex, fieldDom) {
     console.log('Get edit template of ' + fieldDom.outerHTML);
     var column = this.options.columns[columnIndex];
-    var fieldTemplate = this._getEditFieldTemplate(rowIndex, columnIndex);
+    var fieldTemplate = this.getEditFieldTemplate(rowIndex, columnIndex);
 
     if (fieldTemplate) {
       Dom.update(fieldTemplate, fieldDom);
@@ -338,7 +312,7 @@ var Grid = (function() {
   };
 
 
-  Grid.prototype.renderHeader: function() {
+  Grid.prototype.renderHeader = function() {
     var headers = [];
     for (var i = 0; i < this.options.columns.length; ++i) {
       var headerName = this.options.columns[i].title;
@@ -353,11 +327,11 @@ var Grid = (function() {
     if (this.isShowEditButton()) headers.push(Dom.createElement('th', null, ['']));
 
 
-    Dom.render(Dom.createElement('tr', null, headers), this._getHeaderPosition());
+    Dom.render(Dom.createElement('tr', null, headers), this.getHeaderPosition());
   };
 
   // TODO : Can render custom layout instead of default
-  Grid.prototype.renderLayout: function() {
+  Grid.prototype.renderLayout = function() {
 
 
 
@@ -404,34 +378,32 @@ var Grid = (function() {
   };
 
   // TODO : Render with customs number of row
-  Grid.prototype.renderRows: function() {
-    Dom.clear(this._getBodyPosition());
+  Grid.prototype.renderRows = function() {
+    Dom.clear(this.getBodyPosition());
 
     for (var index = 0; index < this._dataSource.length; ++index) {
-      this._renderRow(index, this._dataSource[index]);
+      this.renderRow(index, this._dataSource[index]);
     }
   };
 
   // Render new row or replace old row in grid.
-  Grid.prototype.renderRow: function(rowIndex, dataRow) {
-
-    var cssRowPrefix = this.CSS_ROW_PREFIX;
+  Grid.prototype.renderRow = function(row, dataRow) {
     var columns = this.options.columns;
 
     // Query select if that row was created.
-    var existedRow = this._getRowTarget(rowIndex);
+    var existedRow = this.getRowTarget(row);
 
     if (existedRow) {
       Dom.updates(getRowTemplate.call(this), existedRow);
     } else {
       var rowContainer = {};
       rowContainer = Dom.createElement('tr', {
-        className: cssRowPrefix + rowIndex
+        className: CSS_ROW_PREFIX + row
       }, getRowTemplate.call(this));
 
       Dom.render(
         rowContainer,
-        this._getBodyPosition()
+        this.getBodyPosition()
       );
     }
 
@@ -439,21 +411,22 @@ var Grid = (function() {
 
       var fields = [];
       for (var columnIndex = 0; columnIndex < columns.length; ++columnIndex) {
-        fields.push(this._getRowFieldTemplate(rowIndex, columnIndex));
+        fields.push(this.getRowFieldTemplate(row, columnIndex));
       }
-      if (this.isShowEditButton()) fields.push(this._getEditButtonTemplate(rowIndex));
+      if (this.isShowEditButton()) fields.push(this.getEditButtonTemplate(row));
       return fields;
     }
   };
 
 
-
-  // Get template default or custom template by user
-  Grid.prototype.getRowFieldTemplate: function(row, col) {
-    var cssColPrefix = this.CSS_COL_PREFIX,
-      colOption = this._getColOption(col),
+  Object.prototype.getRowTarget = function(rowIndex) {
+      return this.getBodyPosition().querySelector('.' + CSS_ROW_PREFIX + rowIndex);
+    }
+    // Get template default or custom template by user
+  Grid.prototype.getRowFieldTemplate = function(row, col) {
+    var colOption = getColOption.call(this, col),
       dataIndex = colOption.dataIndex,
-      value = dataIndex ? this._getValue(row, dataIndex) : '',
+      value = dataIndex ? this.getValue(row, dataIndex) : '',
       fieldTemplate = colOption.fieldTemplate,
       field = undefined;
 
@@ -469,7 +442,7 @@ var Grid = (function() {
     if (field === undefined) throw ('Field template must be a function -->' + JSON.stringify(colOption));
 
     return Dom.createElement('td', {
-      className: cssColPrefix + col
+      className: CSS_COL_PREFIX + col
     }, [field]);
 
   };
@@ -477,7 +450,7 @@ var Grid = (function() {
 
 
   // --- Get value of field which was customed template by user
-  Grid.prototype.getValue: function(row, dataIndex) {
+  Grid.prototype.getValue = function(row, dataIndex) {
     console.log('Get value data of row ' + row + ' col ' + dataIndex);
     var value = this._dataSource[row][dataIndex];
     if (value === 'undefined') throw ('There are no date value at row ' + row + ' col ' + dataIndex);
@@ -485,9 +458,9 @@ var Grid = (function() {
   };
 
   // --- Get by default or customs template from user config
-  Grid.prototype.getEditFieldTemplate: function(row, col) {
+  Grid.prototype.getEditFieldTemplate = function(row, col) {
 
-    var colOption = this._getColOption(col);
+    var colOption = getColOption.call(this, col);
     var editable = colOption.editable !== undefined ? colOption.editable : false;
     if (!editable) return;
 
@@ -534,7 +507,7 @@ var Grid = (function() {
     throw ('Can not render field ' + JSON.stringify(colOption));
   };
 
-  Grid.prototype.getEditValue: function(col, fieldDom) {
+  Grid.prototype.getEditValue = function(col, fieldDom) {
     var column = this.options.columns[col];
     var editable = column.editable
     if (!column.dataIndex) return;
@@ -562,19 +535,19 @@ var Grid = (function() {
   };
 
   // TODO : Option col summary
-  Grid.prototype.getFootTemplate: function() {
+  Grid.prototype.getFootTemplate = function() {
 
   };
 
-  Grid.prototype.getEditButtonTemplate: function(row) {
+  Grid.prototype.getEditButtonTemplate = function(row) {
 
     return Dom.createElement('td', {
-      className: this.EDIT_COL_PREFIX
+      className: EDIT_COL_PREFIX
     }, [
       Dom.createElement('button', {
         type: 'button',
         className: 'btn btn-link',
-        id: this.BTN_EDIT_PREFIX + row
+        id: BTN_EDIT_PREFIX + row
       }, [
         Dom.createElement('span', {
           className: 'glyphicon glyphicon-edit icon-black'
@@ -583,7 +556,7 @@ var Grid = (function() {
       Dom.createElement('button', {
         type: 'button',
         className: 'btn btn-link',
-        id: this.BTN_REMOVE_PREFIX + row
+        id: BTN_REMOVE_PREFIX + row
       }, [
         Dom.createElement('span', {
           className: 'glyphicon glyphicon-remove icon-red'
@@ -593,14 +566,14 @@ var Grid = (function() {
 
   };
 
-  Grid.prototype.getSaveButtonTemplate: function(row) {
+  Grid.prototype.getSaveButtonTemplate = function(row) {
 
     var buttons = [];
 
     buttons.push(Dom.createElement('button', {
       type: 'button',
       className: 'btn btn-link',
-      id: this.BTN_SAVE_PREFIX + row
+      id: BTN_SAVE_PREFIX + row
     }, [
       Dom.createElement('span', {
         className: 'glyphicon glyphicon-ok-circle icon-green'
@@ -609,7 +582,7 @@ var Grid = (function() {
     buttons.push(Dom.createElement('button', {
       type: 'button',
       className: 'btn btn-link',
-      id: this.BTN_CANCEL_PREFIX + row
+      id: BTN_CANCEL_PREFIX + row
     }, [
       Dom.createElement('span', {
         className: 'glyphicon glyphicon-refresh icon-red'
@@ -619,15 +592,15 @@ var Grid = (function() {
     return buttons;
   };
 
-  Grid.prototype.getBodyPosition: function() {
+  Grid.prototype.getBodyPosition = function() {
     return this.options.renderTo.querySelector('tbody');
   };
 
-  Grid.prototype.getHeaderPosition: function() {
+  Grid.prototype.getHeaderPosition = function() {
     return this._header = this.options.renderTo.querySelector('thead');
   };
 
-  Grid.prototype.eventCallback: function(event) {
+  Grid.prototype.eventCallback = function(event) {
     var callback = this.options[event.type];
 
     if (callback && typeof callback === 'function')

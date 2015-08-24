@@ -633,13 +633,12 @@
 
   var grid = new Grid({
     dataSource: clients,
-    onRowFocused: onRowFocused,
+    onRowHover: onRowHover,
     onRowEdited: onRowEdited,
-    onRowRendered: onRowRendered,
     onRowClicked: onRowClicked,
     onRowDoubleClicked: onRowDoubleClicked,
     onRowRemoved: onRowRemoved,
-    onFieldFocused: onFieldFocused,
+    onRowAdded: onRowAdded,
 
     isShowHeader: true,
     isShowEditButton: true,
@@ -676,7 +675,7 @@
         }, [Dom.createElement('img', {
           className: 'img-responsive',
           alt: rowIndex,
-          src: 'assets/img.jpg'
+          src: 'img/img.jpg'
         })]);
       }
     }, {
@@ -744,8 +743,8 @@
     renderTo: document.getElementById('grid')
   });
 
-  function onRowFocused(event) {
-    console.info("Event " + event.type + ' on row ' + event.row + ' col ' + event.col);
+  function onRowHover(event) {
+    //console.info("Event " + event.type + ' on row ' + event.row + ' col ' + event.col);
   }
 
   function onRowEdited(event) {
@@ -768,11 +767,7 @@
     console.info("Event " + event.type + ' on row ' + event.row + ' col ' + event.col);
   }
 
-  function onFieldFocused(event) {
-    console.info("Event " + event.type + ' on row ' + event.row + ' col ' + event.col);
-  }
-
-  function onFieldFocused(event) {
+  function onRowAdded(event) {
     console.info("Event " + event.type + ' on row ' + event.row + ' col ' + event.col);
   }
 
