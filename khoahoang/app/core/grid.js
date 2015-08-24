@@ -102,9 +102,10 @@ var Grid = (function() {
           if (indexButton.indexOf(savePrefix) !== -1) {
             var rowIndex = indexButton.substr(savePrefix.length);
             console.log('Save change row ' + rowIndex);
+            grid.saveChange();
+
           }
 
-          // TODO : refresh row
           // Click on button cancel change row
           if (indexButton.indexOf(cancelPrefix) !== -1) {
             var rowIndex = indexButton.substr(cancelPrefix.length);
@@ -114,7 +115,7 @@ var Grid = (function() {
 
         } catch (e) {
           alert(e);
-          throw e;
+          console.error(e);
         }
         e.stopPropagation();
 
@@ -192,8 +193,59 @@ var Grid = (function() {
 
     },
 
+    saveChange() {
+      var row = this._editingPosition,
+        editingRow = this._getRowTarget(row),
+        cssColPrefix = this.CSS_COL_PREFIX;
+
+      if (!editingRow) throw ('Something go to wrong with Edit Feature --> editing row : ' + row);
+
+      var fields = editingRow.querySelectorAll('td');
+
+      console.log('Save change ' + fields.length + ' field : ' + JSON.stringify(fields));
+
+      for (var i = 0; i < fields.length; i++) {
+        var field = fields[i];
+        if (field.className.indexOf(cssColPrefix) !== -1) {
+          var col = parseInt(field.className.substr(cssColPrefix.length));
+          console.log('Get value from field ' + col + ' of row ' + row);
+
+          console.log('Catch col = ' + col);
+          try {
+            var value = this._getEditValue(col, field);
+
+          } catch (e) {
+            alert(e);
+            console.log(e);
+            return;
+          }
+
+          if (value !== undefined) {
+            var column = this.options.columns[col];
+            var dataIndex = column.dataIndex;
+            switch (column.dataType) {
+              case 'number':
+                value = parseInt(value);
+                break;
+              case 'boolean':
+                value = Boolean(value);
+                break;
+              default:
+                value = String(value);
+                break;
+            }
+            console.log(column.dataType);
+            this._dataSource[row][dataIndex] = value;
+          }
+        }
+      }
+
+      this._renderRow(row, this._dataSource[row]);
+      this._editingPosition = -1;
+    },
+
     editRow: function(row) {
-      console.log("Edit row");
+
       var cssRowPrefix = this.CSS_ROW_PREFIX;
       var cssColPrefix = this.CSS_COL_PREFIX;
       var cssBtnEdit = this.EDIT_COL_PREFIX;
@@ -208,33 +260,35 @@ var Grid = (function() {
       for (var i = 0; i < fields.length; i++) {
         var field = fields[i];
         if (field.className.indexOf(cssColPrefix) !== -1)
-          this.editField(row, i, field);
+          this.renderEditField(row, i, field);
         if (field.className.indexOf(cssBtnEdit) !== -1) {
           renderBtnSave(field);
         }
       }
 
+      //FIX
       function renderBtnSave(target) {
-        var btnDom = grid._getSaveButtonTemplate(row);
-        Dom.update(btnDom, target);
+        var btnSaveChanges = grid._getSaveButtonTemplate(row);
+        Dom.updates(btnSaveChanges, target);
       }
 
     },
 
     removeRow: function(rowIndex) {
       var confirm = window.confirm(this.options.removeMessage ? this.options.removeMessage : 'Please confirm that you really want to remove it.');
-      var cssRowPrefix = this.CSS_ROW_PREFIX;
       if (confirm) {
         delete this._dataSource[rowIndex];
-        this._getBodyPosition().querySelector(cssRowPrefix + rowIndex).remove();
+        this._getRowTarget(rowIndex).remove();
       }
 
     },
+
+
     updateRow: function() {
 
     },
 
-    editField: function(rowIndex, columnIndex, fieldDom) {
+    renderEditField: function(rowIndex, columnIndex, fieldDom) {
       console.log('Get edit template of ' + fieldDom.outerHTML);
       var column = this.options.columns[columnIndex];
       var fieldTemplate = this._getEditFieldTemplate(rowIndex, columnIndex);
@@ -327,7 +381,7 @@ var Grid = (function() {
       var columns = this.options.columns;
 
       // Query select if that row was created.
-      var existedRow = document.querySelector('.' + cssRowPrefix + rowIndex);
+      var existedRow = this._getRowTarget(rowIndex);
 
       if (existedRow) {
         Dom.updates(getRowTemplate.call(this), existedRow);
@@ -354,21 +408,10 @@ var Grid = (function() {
       }
     },
 
-    _renderEditRow: function(rowIndex) {
-      var rowContainer = {};
-      var fields = [];
 
-      var columns = this.options.columns;
-      for (var columnIndex = 0; columnIndex < columns.length; ++columnIndex) {
-        fields.push(this._getEditFieldTemplate(rowIndex, columns[columnIndex]));
-      }
-
-      rowContainer = Dom.createElement('tr', null, fields);
-
-      Dom.render(
-        rowContainer,
-        this._getBodyPosition()
-      );
+    _getRowTarget(rowIndex) {
+      var cssRowPrefix = this.CSS_ROW_PREFIX;
+      return this._getBodyPosition().querySelector('.' + cssRowPrefix + rowIndex);
     },
 
     // TODO : header title with sort and filter button.
@@ -378,12 +421,17 @@ var Grid = (function() {
 
     // Get template default or custom template by user
     _getRowFieldTemplate: function(row, col) {
-      var cssColPrefix = this.CSS_COL_PREFIX;
-      var colOption = this._getColOption(col);
-      var dataIndex = colOption.dataIndex;
-      var value = dataIndex ? this._getValue(row, dataIndex) : '';
-      var fieldTemplate = colOption.fieldTemplate;
-      var field = undefined;
+      var cssColPrefix = this.CSS_COL_PREFIX,
+        colOption = this._getColOption(col),
+        dataIndex = colOption.dataIndex,
+        value = dataIndex ? this._getValue(row, dataIndex) : '',
+        fieldTemplate = colOption.fieldTemplate,
+        field = undefined;
+
+      if (!colOption.dataType) {
+        this.options.columns[col].dataType = typeof value;
+        console.debug('Set type of field : ' + this.options.columns[col].dataType);
+      }
 
       if (!fieldTemplate) field = String(value);
 
@@ -474,14 +522,16 @@ var Grid = (function() {
       var getValFn = column.getEditValue;
 
       // if this field using defaut editor (input text)
-      if (column.editTemplate === this.TEMPLATE_EDIT_STRING) {
-        var input = field.getElementsByTagName('input')[0];
+      if (!getValFn) {
+        var input = fieldDom.getElementsByTagName('input')[0];
         if (input) {
           var value = input.value;
-          if (!value || value.trim() === '')
-            throw ('Input text can not empty.');
 
-          console.log('new value is : ' + value);
+          // Check nullable of config this column
+          var nullable = column.nullable !== undefined ? column.nullable : true;
+          if (!nullable && (!value || value.trim() === ''))
+            throw ('Input ' + column.title + ' can not empty.');
+
           return value;
         }
       }
@@ -526,28 +576,28 @@ var Grid = (function() {
 
     _getSaveButtonTemplate: function(row) {
 
-      return Dom.createElement('td', {
-        className: this.EDIT_COL_PREFIX
+      var buttons = [];
+
+      buttons.push(Dom.createElement('button', {
+        type: 'button',
+        className: 'btn btn-link',
+        id: this.BTN_SAVE_PREFIX + row
       }, [
-        Dom.createElement('button', {
-          type: 'button',
-          className: 'btn btn-link',
-          id: this.BTN_SAVE_PREFIX + row
-        }, [
-          Dom.createElement('span', {
-            className: 'glyphicon glyphicon-ok-circle icon-green'
-          })
-        ]),
-        Dom.createElement('button', {
-          type: 'button',
-          className: 'btn btn-link',
-          id: this.BTN_CANCEL_PREFIX + row
-        }, [
-          Dom.createElement('span', {
-            className: 'glyphicon glyphicon-refresh icon-red'
-          })
-        ])
-      ])
+        Dom.createElement('span', {
+          className: 'glyphicon glyphicon-ok-circle icon-green'
+        })
+      ]));
+      buttons.push(Dom.createElement('button', {
+        type: 'button',
+        className: 'btn btn-link',
+        id: this.BTN_CANCEL_PREFIX + row
+      }, [
+        Dom.createElement('span', {
+          className: 'glyphicon glyphicon-refresh icon-red'
+        })
+      ]));
+
+      return buttons;
     },
 
     _getBodyPosition: function() {

@@ -664,7 +664,8 @@
       title: 'Name',
       flexWidth: 2,
       dataIndex: 'Name',
-      editable: 'true'
+      editable: 'true',
+      nullable: false
     }, {
       title: 'Age',
       flexWidth: 1,
@@ -723,7 +724,7 @@
       },
       getEditValue: function(targetDom) {
         var select = document.querySelector('.check-maried');
-        return select.value || false;
+        return select ? select.checked : undefined;
       }
     }],
 
