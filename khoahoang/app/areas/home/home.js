@@ -675,7 +675,7 @@
         }, [Dom.createElement('img', {
           className: 'img-responsive',
           alt: rowIndex,
-          src: 'img/img.jpg'
+          src: 'assets/img.jpg'
         })]);
       }
     }, {
