@@ -2,7 +2,7 @@ window.Dom || (function(window) {
   'use strict';
 
   window.Dom = {
-    createElement: function(tag, attributes, children, callbackEvent) {
+    createElement: function(tag, attributes, children, callbackEvent, typeEvent) {
       var node = document.createElement(tag);
       if (attributes) {
         for (var i in attributes) {
@@ -10,7 +10,7 @@ window.Dom || (function(window) {
         }
       }
       if (callbackEvent) {
-        return callbackEvent();
+        node.addEventListener(typeEvent, callbackEvent);
       }
       if (children && children.length > 0) {
         for (var i = 0, child; i < children.length; ++i) {
