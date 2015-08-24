@@ -92,7 +92,7 @@ var Grid = (function() {
 
           // Click on button remove row
           if (indexButton.indexOf(removePrefix) !== -1) {
-            var rowIndex = indexButton.substr(removePrefix.lenght);
+            var rowIndex = indexButton.substr(removePrefix.length);
 
             grid.removeRow(rowIndex);
           }
@@ -100,16 +100,16 @@ var Grid = (function() {
           // TODO : save change with custom edit template
           // Click on button save change row
           if (indexButton.indexOf(savePrefix) !== -1) {
-            var rowIndex = indexButton.substr(savePrefix.lenght);
+            var rowIndex = indexButton.substr(savePrefix.length);
             console.log('Save change row ' + rowIndex);
           }
 
           // TODO : refresh row
           // Click on button cancel change row
           if (indexButton.indexOf(cancelPrefix) !== -1) {
-            var rowIndex = indexButton.substr(cancelPrefix.lenght);
+            var rowIndex = indexButton.substr(cancelPrefix.length);
             console.log('Cancel edit row ' + rowIndex);
-            grid.removeRow(rowIndex);
+            grid._renderRow(rowIndex, grid._dataSource[rowIndex]);
           }
 
         } catch (e) {
