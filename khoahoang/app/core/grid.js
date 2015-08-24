@@ -108,7 +108,7 @@ var Grid = (function() {
           // Click on button cancel change row
           if (indexButton.indexOf(cancelPrefix) !== -1) {
             var rowIndex = indexButton.substr(cancelPrefix.length);
-            console.log('Cancel edit row ' + rowIndex);
+            grid._editingPosition = -1;
             grid._renderRow(rowIndex, grid._dataSource[rowIndex]);
           }
 
@@ -199,7 +199,7 @@ var Grid = (function() {
       var cssBtnEdit = this.EDIT_COL_PREFIX;
       var grid = this;
 
-      if (this._editingPosition !== -1) throw ('Please complete editing row first.');
+      if (this._editingPosition !== -1) throw ('Please complete editing row ' + (+this._editingPosition + 1) + ' first.');
       this._editingPosition = row;
 
       var fields = document.querySelectorAll('.' + cssRowPrefix + row + ' > td');
