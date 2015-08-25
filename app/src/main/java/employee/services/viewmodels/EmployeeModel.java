@@ -15,16 +15,16 @@ public class EmployeeModel implements Serializable {
 
 	private boolean gender;
 
-	private int country;
+	private int department;
 	
 	public EmployeeModel() {}
 
-	public EmployeeModel(long id, String name, int age, boolean gender, int country) {
+	public EmployeeModel(long id, String name, int age, boolean gender, int department) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
 		this.gender = gender;
-		this.country = country;
+		this.department = department;
 	}
 
 	public long getId() {
@@ -59,12 +59,12 @@ public class EmployeeModel implements Serializable {
 		this.gender = gender;
 	}
 
-	public int getCountry() {
-		return country;
+	public int getDepartment() {
+		return department;
 	}
 
-	public void setCountry(int country) {
-		this.country = country;
+	public void setDepartment(int department) {
+		this.department = department;
 	}
 	
 	

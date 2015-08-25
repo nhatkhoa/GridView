@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -27,7 +28,7 @@ public class Employee implements Serializable {
 	@Column(nullable = false)
 	private boolean male;
 	
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Department department;
 	
 	public Employee() {}
