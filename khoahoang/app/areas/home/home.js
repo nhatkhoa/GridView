@@ -118,7 +118,7 @@
       nullable: false
     }, {
       title: 'Country',
-      flexWidth: 2,
+      flexWidth: 1,
       dataIndex: 'Country',
       editable: true,
       fieldTemplate: function(value, rowIndex) {

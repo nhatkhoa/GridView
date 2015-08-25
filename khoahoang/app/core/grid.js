@@ -321,7 +321,7 @@ var Grid = (function() {
           className: 'btn btn-link ',
           id: BTN_SORT_PREFIX + i
         }, [Dom.createElement('i', {
-          className: 'glyphicon ' + (colOption.sortReverse ? 'glyphicon-arrow-down' : 'glyphicon-arrow-up')
+          className: 'glyphicon glyphicon-arrow-down'
         })]);
 
         headers.push(Dom.createElement('th', {
@@ -631,49 +631,51 @@ var Grid = (function() {
   };
 
   Grid.prototype.sortByColumn = function(col) {
+    if (this.editingPosition !== -1) return;
 
     var colOption = getColOption.call(this, col);
     var dataIndex = colOption.dataIndex;
     if (!dataIndex) return;
 
+    this._dataSource.sort(sort.bind(this));
+    this.renderRows();
 
-    function getAndChangeState() {
+    tongleState.call(this);
+
+    function getState() {
       if (colOption.sortReverse === undefined) {
         this.options.columns[col].sortReverse = false;
         return false;
       }
-      var state = this.options.columns[col].sortReverse;
-      this.options.columns[col].sortReverse = !state;
-      return state;
+      return this.options.columns[col].sortReverse;
     }
+
+    function tongleState() {
+      var state = getState.call(this);
+      this.options.columns[col].sortReverse = !state;
+      // --- Change btn icon
+      var icon = this.options.renderTo.querySelector('#' + BTN_SORT_PREFIX + col + ' i');
+      icon.className = state ? 'glyphicon glyphicon-arrow-down' : 'glyphicon glyphicon-arrow-up';
+    }
+
 
     function sort(a, b) {
-      var type = typeof a;
+      var type = typeof a[dataIndex];
 
       function number(numA, numB) {
-        return getAndChangeState() ? numB - numA : numA - numB;
+
+        return getState.call(this) ? numB - numA : numA - numB;
       }
 
-      function stringSort(strA, strB) {
-        return getAndChangeState() ? strB.localeCompare(strA) : strA.localeCompare(strB);
+      function string(strA, strB) {
+        return getState.call(this) ? strB.localeCompare(strA) : strA.localeCompare(strB);
       }
 
-      if (type === 'string') return stringSort(a[dataIndex], b[dataIndex]);
-      if (type === 'number') return numberSort(a[dataIndex], b[dataIndex]);
+      if (type === 'string') return string.call(this, a[dataIndex], b[dataIndex]);
+      if (type === 'number') return number.call(this, a[dataIndex], b[dataIndex]);
     }
-
-    this._dataSource.sort(sort);
-
-    console.log(JSON.stringify(this._dataSource));
-
-    this.renderRows();
-
-    console.log(JSON.stringify(this._dataSource));
-
   };
 
   return Grid;
-
-
 
 })();
