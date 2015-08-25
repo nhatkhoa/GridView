@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import employee.domain.Employee;
 
 @Repository
-public interface EmployeesRepo extends JpaRepository<Employee, Long> {
+public interface EmployeeRepo extends JpaRepository<Employee, Long> {
 	
 }

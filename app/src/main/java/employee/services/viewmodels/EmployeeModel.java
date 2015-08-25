@@ -26,6 +26,7 @@ public class EmployeeModel implements Serializable {
 		this.gender = gender;
 		this.department = department;
 	}
+	
 
 	public long getId() {
 		return id;

@@ -31,7 +31,7 @@
 
     columns: [{
       title: 'ID',
-      flexWidth: 2,
+      flexWidth: 1,
       dataIndex: 'id',
       editable: false
     }, {

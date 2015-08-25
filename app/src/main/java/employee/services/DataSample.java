@@ -5,12 +5,12 @@ import java.util.List;
 
 import employee.domain.Department;
 import employee.domain.Employee;
-import employee.repositories.DepartmentsRepo;
-import employee.repositories.EmployeesRepo;
+import employee.repositories.DepartmentRepo;
+import employee.repositories.EmployeeRepo;
 
 public class DataSample {
 	
-	public static void initData(EmployeesRepo employeeRepo, DepartmentsRepo departmentRepo) {
+	public static void initData(EmployeeRepo employeeRepo, DepartmentRepo departmentRepo) {
 		
 		Department human = new Department("Human Resources");
 		departmentRepo.save(human);

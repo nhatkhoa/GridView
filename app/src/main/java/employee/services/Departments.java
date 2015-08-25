@@ -6,17 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import employee.domain.Department;
-import employee.repositories.DepartmentsRepo;
-import employee.repositories.EmployeesRepo;
+import employee.repositories.DepartmentRepo;
+import employee.repositories.EmployeeRepo;
 
 @Repository
 public class Departments implements DepartmentService {
 	
 	@Autowired
-	private EmployeesRepo eRepo;
+	private EmployeeRepo eRepo;
 	
 	@Autowired
-	private DepartmentsRepo dRepo;
+	private DepartmentRepo dRepo;
 	
 	public List<Department> gets(){
 		if(dRepo.findAll().isEmpty())

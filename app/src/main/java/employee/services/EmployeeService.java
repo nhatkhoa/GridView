@@ -1,12 +1,18 @@
+
 package employee.services;
+
 
 import java.util.List;
 
 import employee.services.viewmodels.EmployeeModel;
 
 public interface EmployeeService {
-	List<EmployeeModel> gets();
-	EmployeeModel add(EmployeeModel employee);
-	EmployeeModel update(EmployeeModel employee);
-	void delete(long id);
+    
+    EmployeeModel add(EmployeeModel employee) throws Exception;
+    
+    void delete(long id);
+    
+    List<EmployeeModel> gets();
+    
+    EmployeeModel update(EmployeeModel employee) throws Exception;
 }
