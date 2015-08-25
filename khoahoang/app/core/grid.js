@@ -9,7 +9,8 @@ var Grid = (function() {
     BTN_EDIT_PREFIX = 'edit-',
     BTN_REMOVE_PREFIX = 'remove-',
     BTN_SAVE_PREFIX = 'save-',
-    BTN_CANCEL_PREFIX = 'cancel-';
+    BTN_CANCEL_PREFIX = 'cancel-',
+    BTN_SORT_PREFIX = 'sort-';
 
 
   function Grid(options) {
@@ -109,7 +110,11 @@ var Grid = (function() {
       if (checkType(BTN_EDIT_PREFIX)) this.editRow(getRow(BTN_EDIT_PREFIX));
       if (checkType(BTN_REMOVE_PREFIX)) this.removeRow(getRow(BTN_REMOVE_PREFIX));
       if (checkType(BTN_SAVE_PREFIX)) this.saveChange();
-      if (checkType(BTN_CANCEL_PREFIX)) grid.cancelEdit();
+      if (checkType(BTN_CANCEL_PREFIX)) this.cancelEdit();
+      if (checkType(BTN_SORT_PREFIX)) {
+
+        this.sortByColumn(getRow(BTN_SORT_PREFIX));
+      }
 
     }
 
@@ -145,7 +150,7 @@ var Grid = (function() {
   };
 
   Grid.prototype.addEventListener = function(type, callback) {
-    var node = this.getBodyPosition();
+    var node = this.options.renderTo;
 
     node.addEventListener(type, callbackfn.bind(this));
 
@@ -304,14 +309,33 @@ var Grid = (function() {
 
   Grid.prototype.renderHeader = function() {
     var headers = [];
-    for (var i = 0; i < this.options.columns.length; ++i) {
-      var headerName = this.options.columns[i].title;
-      var flexWidth = this.options.columns[i].flexWidth;
-      var flexWidth = ' col-lg-' + flexWidth + ' col-sm-' + flexWidth + ' col-xs-' + flexWidth;
 
-      headers.push(Dom.createElement('th', {
-        className: flexWidth
-      }, [headerName]));
+    for (var i = 0; i < this.options.columns.length; ++i) {
+      var colOption = getColOption.call(this, i);
+      var headerName = colOption.title;
+      var flexWidth = colOption.flexWidth;
+      var dataIndex = colOption.dataIndex;
+      var flexWidth = ' col-lg-' + flexWidth + ' col-sm-' + flexWidth + ' col-xs-' + flexWidth;
+      if (dataIndex) {
+        var btnSort = Dom.createElement('button', {
+          className: 'btn btn-link ',
+          id: BTN_SORT_PREFIX + i
+        }, [Dom.createElement('i', {
+          className: 'glyphicon ' + (colOption.sortReverse ? 'glyphicon-arrow-down' : 'glyphicon-arrow-up')
+        })]);
+
+        headers.push(Dom.createElement('th', {
+          className: flexWidth
+        }, [
+          Dom.createElement('span', null, [headerName]),
+          btnSort
+        ]));
+      } else {
+        headers.push(Dom.createElement('th', {
+          className: flexWidth
+        }, [headerName]));
+      }
+
     }
 
     if (this.isShowEditButton()) headers.push(Dom.createElement('th', null, ['']));
@@ -590,13 +614,14 @@ var Grid = (function() {
   };
 
   Grid.prototype.getBodyPosition = function() {
-    console.log('Render to ' + this.options.body);
+
     return this.options.body || this.options.renderTo.querySelector('tbody');
   };
 
   Grid.prototype.getHeaderPosition = function() {
     return this.options.renderTo.querySelector('thead');
   };
+
 
   Grid.prototype.eventCallback = function(event) {
     var callback = this.options[event.type];
@@ -605,6 +630,50 @@ var Grid = (function() {
       callback.call(this, event);
   };
 
+  Grid.prototype.sortByColumn = function(col) {
+
+    var colOption = getColOption.call(this, col);
+    var dataIndex = colOption.dataIndex;
+    if (!dataIndex) return;
+
+
+    function getAndChangeState() {
+      if (colOption.sortReverse === undefined) {
+        this.options.columns[col].sortReverse = false;
+        return false;
+      }
+      var state = this.options.columns[col].sortReverse;
+      this.options.columns[col].sortReverse = !state;
+      return state;
+    }
+
+    function sort(a, b) {
+      var type = typeof a;
+
+      function number(numA, numB) {
+        return getAndChangeState() ? numB - numA : numA - numB;
+      }
+
+      function stringSort(strA, strB) {
+        return getAndChangeState() ? strB.localeCompare(strA) : strA.localeCompare(strB);
+      }
+
+      if (type === 'string') return stringSort(a[dataIndex], b[dataIndex]);
+      if (type === 'number') return numberSort(a[dataIndex], b[dataIndex]);
+    }
+
+    this._dataSource.sort(sort);
+
+    console.log(JSON.stringify(this._dataSource));
+
+    this.renderRows();
+
+    console.log(JSON.stringify(this._dataSource));
+
+  };
+
   return Grid;
+
+
 
 })();
