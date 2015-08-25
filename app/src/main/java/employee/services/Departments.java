@@ -1,4 +1,6 @@
+
 package employee.services;
+
 
 import java.util.List;
 
@@ -11,16 +13,16 @@ import employee.repositories.EmployeeRepo;
 
 @Repository
 public class Departments implements DepartmentService {
-	
-	@Autowired
-	private EmployeeRepo eRepo;
-	
-	@Autowired
-	private DepartmentRepo dRepo;
-	
-	public List<Department> gets(){
-		if(dRepo.findAll().isEmpty())
-			DataSample.initData(eRepo, dRepo);	
-		return dRepo.findAll();
-	}
+    
+    @Autowired
+    private EmployeeRepo eRepo;
+    
+    @Autowired
+    private DepartmentRepo dRepo;
+    
+    public List<Department> gets() {
+        
+        if (dRepo.findAll().isEmpty()) DataSample.initData(eRepo, dRepo);
+        return dRepo.findAll();
+    }
 }

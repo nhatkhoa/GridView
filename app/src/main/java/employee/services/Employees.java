@@ -29,7 +29,7 @@ public class Employees implements EmployeeService {
         
         Department department = Utils.getDepartment(departmentRepo,
                                                     employee.getDepartment());
-
+                                                    
         Employee temp = new Employee(employee.getName(), employee.getAge(),
                                      employee.isGender(), department);
         Employee newEmployee = employeeRepo.save(temp);
@@ -42,9 +42,9 @@ public class Employees implements EmployeeService {
     
     @Override
     public void delete(final long id) {
-
+        
         employeeRepo.delete(id);
-
+        
         Assert.assertNull(employeeRepo.findOne(id));
     }
     
@@ -63,7 +63,7 @@ public class Employees implements EmployeeService {
     
     @Override
     public EmployeeModel update(final EmployeeModel employee) throws Exception {
-
+        
         long id = employee.getId();
         Employee oldEmployee = Utils.getEmployee(employeeRepo, id);
         oldEmployee.setName(employee.getName());
@@ -72,7 +72,7 @@ public class Employees implements EmployeeService {
         oldEmployee.setDepartment(Utils.getDepartment(departmentRepo,
                                                       employee.getDepartment()));
         Employee updatedEmployee = employeeRepo.saveAndFlush(oldEmployee);
-
+        
         return Utils.parseEmployeeModel(updatedEmployee);
     }
     

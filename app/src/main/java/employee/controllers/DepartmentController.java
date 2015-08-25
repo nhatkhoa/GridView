@@ -1,4 +1,6 @@
+
 package employee.controllers;
+
 
 import java.util.List;
 
@@ -13,13 +15,16 @@ import employee.services.DepartmentService;
 @RestController
 @RequestMapping("/departments")
 public class DepartmentController {
-	
-	@Autowired
-	private DepartmentService service;
-
-	@RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
-	public List<Department> gets(){
-		return service.gets();
-	}
-	
+    
+    @Autowired
+    private DepartmentService service;
+    
+    @RequestMapping(value = "/",
+                    method = RequestMethod.GET,
+                    produces = "application/json")
+    public List<Department> gets() {
+        
+        return service.gets();
+    }
+    
 }
