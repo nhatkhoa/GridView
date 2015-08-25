@@ -90,7 +90,7 @@ var Grid = (function() {
 
 
   Grid.prototype.render = function() {
-    this.renderLayout();
+    if (!this.options.body) this.renderLayout();
     if (this.isShowHeader) this.renderHeader();
     this.renderRows();
   };
@@ -419,10 +419,11 @@ var Grid = (function() {
   };
 
 
-  Object.prototype.getRowTarget = function(rowIndex) {
-      return this.getBodyPosition().querySelector('.' + CSS_ROW_PREFIX + rowIndex);
-    }
-    // Get template default or custom template by user
+  Grid.prototype.getRowTarget = function(rowIndex) {
+    return this.getBodyPosition().querySelector('.' + CSS_ROW_PREFIX + rowIndex);
+  };
+
+  // --- Get template default or custom template by user
   Grid.prototype.getRowFieldTemplate = function(row, col) {
     var colOption = getColOption.call(this, col),
       dataIndex = colOption.dataIndex,
@@ -593,11 +594,11 @@ var Grid = (function() {
   };
 
   Grid.prototype.getBodyPosition = function() {
-    return this.options.renderTo.querySelector('tbody');
+    return this.options.body || this.options.renderTo.querySelector('tbody');
   };
 
   Grid.prototype.getHeaderPosition = function() {
-    return this._header = this.options.renderTo.querySelector('thead');
+    return this.options.renderTo.querySelector('thead');
   };
 
   Grid.prototype.eventCallback = function(event) {
