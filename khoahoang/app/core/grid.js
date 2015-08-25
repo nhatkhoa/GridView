@@ -22,8 +22,6 @@ var Grid = (function() {
     BTN_CANCEL_PREFIX = 'cancel-';
 
 
-
-
   function Grid(options) {
     this.options = options || {};
     if (!this.options.renderTo) {
@@ -39,6 +37,7 @@ var Grid = (function() {
 
     this.editingPosition = -1;
     this.currentHoverRow = -1;
+    this.isAddingNewRow = false;
   }
 
   Object.defineProperty(Grid, 'options', {
@@ -53,11 +52,9 @@ var Grid = (function() {
 
 
   function getRowIndex(target) {
-
-    console.log(target);
     while (target.className.indexOf(CSS_ROW_PREFIX) === -1) {
       target = target.parentNode;
-      if (target.nodeName === 'BODY') throw ('Your cursor is out of row.');
+      if (!target || target.nodeName === 'BODY') return;
     }
     return target.className.substr(CSS_ROW_PREFIX.length);
   }
@@ -65,7 +62,7 @@ var Grid = (function() {
   function getColIndex(target) {
     while (target.className.indexOf(CSS_COL_PREFIX) === -1) {
       target = target.parentNode;
-      if (target.nodeName === 'BODY') throw ('Your cursor is out of field.');
+      if (!target || target.nodeName === 'BODY') return;
     }
     return target.className.substr(CSS_COL_PREFIX.length);
   }
@@ -110,8 +107,6 @@ var Grid = (function() {
     function onBtnClick(target) {
 
       var btnId = target.id || target.parentNode.id || '';
-
-      console.log('Click ' + btnId.outerHTML);
 
       function checkType(prefix) {
         return btnId.indexOf(prefix) !== -1;
@@ -169,14 +164,24 @@ var Grid = (function() {
       var target = e.target || e.srcElement;
 
       e.stopPropagation();
-      console.log('Target from addEvent ' + target.outerHTML);
       return callback.call(this, target);
     }
   };
 
   Grid.prototype.cancelEdit = function() {
     var row = this.editingPosition;
-    this.renderRow(row, this._dataSource[row]);
+    console.log('Cancel edit ' + row);
+    if (this.isAddingNewRow) {
+
+      delete this._dataSource[row];
+      this.getRowTarget(row).remove();
+
+      this.isAddingNewRow = false;
+
+    } else {
+      this.renderRow(row, this._dataSource[row]);
+    }
+
     this.editingPosition = -1;
   };
 
@@ -193,13 +198,13 @@ var Grid = (function() {
   };
 
   Grid.prototype.addNewRow = function() {
+    if (this.isAddingNewRow) return;
     var newRow = {};
-    for (var i = 0; i < this.options.length; i++) {
-      var col = this.options[i];
+    for (var i = 0; i < this.options.columns.length; i++) {
+      var col = getColOption.call(this, i);
       var dataIndex = col.dataIndex;
       if (!dataIndex) continue;
       var type = col.dataType || 'string';
-
       switch (type) {
         case 'number':
           newRow[dataIndex] = 0;
@@ -213,8 +218,10 @@ var Grid = (function() {
       }
     };
 
-    this.renderRow(this._dataSource.length, newRow);
-    this.editRow(this._dataSource.length);
+    this._dataSource.push(newRow);
+    this.renderRow(this._dataSource.length - 1, newRow);
+    this.editRow(this._dataSource.length - 1);
+    this.isAddingNewRow = true;
   };
 
   Grid.prototype.saveChange = function() {
@@ -225,21 +232,16 @@ var Grid = (function() {
 
     var fields = editingRow.querySelectorAll('td');
 
-    console.log('Save change ' + fields.length + ' field : ' + JSON.stringify(fields));
-
     for (var i = 0; i < fields.length; i++) {
       var field = fields[i];
       if (field.className.indexOf(CSS_COL_PREFIX) !== -1) {
         var col = parseInt(field.className.substr(CSS_COL_PREFIX.length));
-        console.log('Get value from field ' + col + ' of row ' + row);
-
-        console.log('Catch col = ' + col);
         try {
           var value = this.getEditValue(col, field);
 
         } catch (e) {
           //alert(e);
-          console.log(e);
+          console.error(e);
           return;
         }
 
@@ -257,7 +259,6 @@ var Grid = (function() {
               value = String(value);
               break;
           }
-          console.log(column.dataType);
           this._dataSource[row][dataIndex] = value;
         }
       }
@@ -265,14 +266,13 @@ var Grid = (function() {
 
     this.renderRow(row, this._dataSource[row]);
     this.editingPosition = -1;
+    this.isAddingNewRow = false;
   };
 
   Grid.prototype.editRow = function(row) {
     if (this.editingPosition !== -1) throw ('Please complete editing row ' + (+this.editingPosition + 1) + ' first.');
     this.editingPosition = row;
-    console.log('editingRow ' + this.editingPosition);
     var fields = document.querySelectorAll('.' + CSS_ROW_PREFIX + row + ' > td');
-    console.log('Edit ' + fields.length + ' field : ' + JSON.stringify(fields));
 
     for (var i = 0; i < fields.length; i++) {
       var field = fields[i];
@@ -292,6 +292,7 @@ var Grid = (function() {
   };
 
   Grid.prototype.removeRow = function(rowIndex) {
+    if (this.editingPosition !== -1) return;
     var confirm = window.confirm(this.options.removeMessage ? this.options.removeMessage : 'Please confirm that you really want to remove it.');
     if (confirm) {
       delete this._dataSource[rowIndex];
@@ -301,7 +302,6 @@ var Grid = (function() {
 
 
   Grid.prototype.renderEditField = function(rowIndex, columnIndex, fieldDom) {
-    console.log('Get edit template of ' + fieldDom.outerHTML);
     var column = this.options.columns[columnIndex];
     var fieldTemplate = this.getEditFieldTemplate(rowIndex, columnIndex);
 
@@ -370,11 +370,16 @@ var Grid = (function() {
           Dom.createElement('button', {
             type: 'button',
             className: 'btn btn-default'
-          }, ['Add Row'])
+          }, [this.options.addButton || 'Add Row'], onAddRowClick.bind(this))
         ] : [])
       ]),
       this.options.renderTo
     );
+
+
+    function onAddRowClick() {
+      this.addNewRow();
+    }
   };
 
   // TODO : Render with customs number of row
@@ -423,6 +428,28 @@ var Grid = (function() {
     return this.getBodyPosition().querySelector('.' + CSS_ROW_PREFIX + rowIndex);
   };
 
+
+  Grid.prototype.getFieldValue = function(row, col) {
+    if (this.options.columns.length < col) throw 'Out of columns options in your config.';
+
+    var colOption = this.getColOption(col) || {};
+    var type = colOption.dateType || 'string';
+    var dataIndex = colOption.dataIndex;
+
+    // --- Get value in data source
+    if (row < this._dataSource.length) {
+      return this._dataSource[row][dataIndex];
+    } else { // --- Get value of new row (empty value)
+      switch (type) {
+        case 'number':
+          return 0;
+        case 'boolean':
+          return false;
+        default:
+          return '';
+      }
+    }
+  };
   // --- Get template default or custom template by user
   Grid.prototype.getRowFieldTemplate = function(row, col) {
     var colOption = getColOption.call(this, col),
@@ -433,7 +460,6 @@ var Grid = (function() {
 
     if (!colOption.dataType) {
       this.options.columns[col].dataType = typeof value;
-      console.debug('Set type of field : ' + this.options.columns[col].dataType);
     }
 
     if (!fieldTemplate) field = String(value);
@@ -452,8 +478,9 @@ var Grid = (function() {
 
   // --- Get value of field which was customed template by user
   Grid.prototype.getValue = function(row, dataIndex) {
-    console.log('Get value data of row ' + row + ' col ' + dataIndex);
-    var value = this._dataSource[row][dataIndex];
+
+    var value = this._dataSource[row] ? this._dataSource[row][dataIndex] : undefined;
+
     if (value === 'undefined') throw ('There are no date value at row ' + row + ' col ' + dataIndex);
     return value;
   };
@@ -519,11 +546,13 @@ var Grid = (function() {
       var input = fieldDom.getElementsByTagName('input')[0];
       if (input) {
         var value = input.value;
-
+        console.log(fieldDom.classList);
         // Check nullable of config this column
         var nullable = column.nullable !== undefined ? column.nullable : true;
-        if (!nullable && (!value || value.trim() === ''))
+        if (!nullable && (!value || value.trim() === '')) {
+          fieldDom.className += ' has-feedback has-error';
           throw ('Input ' + column.title + ' can not empty.');
+        }
 
         return value;
       }
