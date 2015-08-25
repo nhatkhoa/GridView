@@ -8,7 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class Country implements Serializable{
+public class Department implements Serializable{
 	
 
 	private static final long serialVersionUID = 1L;
@@ -20,7 +20,11 @@ public class Country implements Serializable{
 	@Column(nullable = false)
 	private String name;
 	
-	public Country(){}
+	public Department(){}
+
+	public Department(String name) {
+		this.name = name;
+	}
 
 	public int getId() {
 		return id;
@@ -37,8 +41,6 @@ public class Country implements Serializable{
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-
 	
 	
 	

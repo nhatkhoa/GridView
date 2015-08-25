@@ -25,12 +25,19 @@ public class Employee implements Serializable {
 	private int age;
 	
 	@Column(nullable = false)
-	private boolean gender;
+	private boolean male;
 	
 	@ManyToOne(optional = false)
-	private Country country;
+	private Department department;
 	
 	public Employee() {}
+
+	public Employee(String name, int age, boolean male, Department department) {
+		this.name = name;
+		this.age = age;
+		this.male = male;
+		this.department = department;
+	}
 
 	public long getId() {
 		return id;
@@ -56,21 +63,22 @@ public class Employee implements Serializable {
 		this.age = age;
 	}
 
-	public boolean isGender() {
-		return gender;
+	public boolean isMale() {
+		return male;
 	}
 
-	public void setGender(boolean gender) {
-		this.gender = gender;
+	public void setMale(boolean male) {
+		this.male = male;
 	}
 
-	public Country getCountry() {
-		return country;
+	public Department getDepartment() {
+		return department;
 	}
 
-	public void setCountry(Country country) {
-		this.country = country;
+	public void setDepartment(Department department) {
+		this.department = department;
 	}
+	
 	
 	
 }

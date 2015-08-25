@@ -18,7 +18,7 @@ public class EmployeeController {
 	
 	@Autowired
 	private EmployeeService service;
-//	/.stream().map(e-> new EmployeeModel(e.getId(), e.getName(), e.getAge(),e.getGender() , e.getCountry().getId()))
+
 	@RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<List<EmployeeModel>> gets(){
 		return new ResponseEntity<List<EmployeeModel>>(service.gets(), HttpStatus.ACCEPTED);
