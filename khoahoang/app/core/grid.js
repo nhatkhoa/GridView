@@ -1,14 +1,4 @@
-//TODO :
-/**
- * + Lazy loading
- * + Added event for user
- * + Flexible custom layout
- * + Sort feature
- * + Filter row
- * + Custom Summary or Avg on footer
- */
-
-// NOTE : Some event is tested on console.
+// Copyright (c) 2015 Kms-technology.com
 var Grid = (function() {
 
   'use strict';
@@ -88,7 +78,7 @@ var Grid = (function() {
 
   Grid.prototype.render = function() {
     if (!this.options.body) this.renderLayout();
-    if (this.isShowHeader) this.renderHeader();
+    if (this.isShowHeader && !this.options.body) this.renderHeader();
     this.renderRows();
   };
 
@@ -428,28 +418,6 @@ var Grid = (function() {
     return this.getBodyPosition().querySelector('.' + CSS_ROW_PREFIX + rowIndex);
   };
 
-
-  Grid.prototype.getFieldValue = function(row, col) {
-    if (this.options.columns.length < col) throw 'Out of columns options in your config.';
-
-    var colOption = this.getColOption(col) || {};
-    var type = colOption.dateType || 'string';
-    var dataIndex = colOption.dataIndex;
-
-    // --- Get value in data source
-    if (row < this._dataSource.length) {
-      return this._dataSource[row][dataIndex];
-    } else { // --- Get value of new row (empty value)
-      switch (type) {
-        case 'number':
-          return 0;
-        case 'boolean':
-          return false;
-        default:
-          return '';
-      }
-    }
-  };
   // --- Get template default or custom template by user
   Grid.prototype.getRowFieldTemplate = function(row, col) {
     var colOption = getColOption.call(this, col),
@@ -546,7 +514,6 @@ var Grid = (function() {
       var input = fieldDom.getElementsByTagName('input')[0];
       if (input) {
         var value = input.value;
-        console.log(fieldDom.classList);
         // Check nullable of config this column
         var nullable = column.nullable !== undefined ? column.nullable : true;
         if (!nullable && (!value || value.trim() === '')) {
@@ -623,6 +590,7 @@ var Grid = (function() {
   };
 
   Grid.prototype.getBodyPosition = function() {
+    console.log('Render to ' + this.options.body);
     return this.options.body || this.options.renderTo.querySelector('tbody');
   };
 

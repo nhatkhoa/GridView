@@ -43,8 +43,8 @@ window.Dom || (function(window) {
         }
       }
     },
-    render: function(nodeOrHtml, parent) {
-      parent.appendChild(nodeOrHtml);
+    render: function(node, parent) {
+      parent.appendChild(node);
     },
     clear: function(parent) {
       parent.innerHTML = '';
